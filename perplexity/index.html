@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Bot UI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-top">
+                <div class="nav-item">
+                    <i class="fa-solid fa-wand-magic-sparkles icon"></i>
+                    <span>Search</span>
+                </div>
+                <div class="nav-item active" id="nav-search">
+                    <i class="fa-solid fa-desktop icon"></i>
+                    <span>Computer</span>
+                </div>
+                <div class="nav-item" id="nav-news">
+                    <i class="fa-solid fa-newspaper icon"></i>
+                    <span>Latest News</span>
+                </div>
+                <div class="nav-item" id="nav-updates">
+                    <i class="fa-solid fa-sync icon"></i>
+                    <span>Updates</span>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="nav-item">
+                    <i class="fa-solid fa-plus icon"></i>
+                    <span>New thread</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fa-solid fa-clock-rotate-left icon"></i>
+                    <span>History</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fa-regular fa-file-lines icon"></i>
+                    <span>Discover</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fa-solid fa-border-all icon"></i>
+                    <span>Spaces</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fa-solid fa-arrow-trend-up icon"></i>
+                    <span>Finance</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fa-regular fa-heart icon"></i>
+                    <span>Health</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fa-solid fa-ellipsis icon"></i>
+                    <span>More</span>
+                </div>
+            </div>
+
+            <div class="sidebar-bottom">
+                <div class="recent-section" id="recentSection">
+                    <h4>Recent</h4>
+                    <p id="recentPlaceholder">Recent and active threads will appear here.</p>
+                    <div id="recentList" class="recent-list"></div>
+                </div>
+                
+                <div class="nav-item sign-in">
+                    <i class="fa-regular fa-user-circle icon"></i>
+                    <span>Sign In</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="center-content">
+                <h1 class="main-title">chat bot</h1>
+
+                <div class="search-container">
+                    <div class="search-input-area">
+                        <textarea placeholder="Type @ for connectors and sources" rows="1"></textarea>
+                    </div>
+                    
+                    <div class="search-controls">
+                        <div class="left-controls">
+                            <input type="file" id="fileInput" accept=".pdf" style="display: none;">
+                            <button class="icon-btn" id="uploadBtn"><i class="fa-solid fa-plus"></i></button>
+                            <button class="pill-btn">
+                                <i class="fa-solid fa-desktop"></i> Computer <span>+</span>
+                            </button>
+                        </div>
+                        <div id="fileStatus" class="file-status"></div>
+                        <div class="right-controls">
+                            <button class="text-btn">Model <i class="fa-solid fa-chevron-down"></i></button>
+                            <button class="icon-btn" id="micBtn"><i class="fa-solid fa-microphone"></i></button>
+                            <button class="icon-btn highlight"><i class="fa-solid fa-wave-square"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="suggestions-container">
+                    <div class="suggestions-header">
+                        <i class="fa-solid fa-desktop"></i> Try Computer
+                    </div>
+                    
+                    <div class="suggestion-chips">
+                        <button class="chip"><i class="fa-solid fa-list-check"></i> Organize my life</button>
+                        <button class="chip"><i class="fa-solid fa-eye"></i> Monitor the situation</button>
+                        <button class="chip"><i class="fa-solid fa-briefcase"></i> Build a business</button>
+                        <button class="chip"><i class="fa-regular fa-lightbulb"></i> Help me learn</button>
+                    </div>
+
+                    <div class="suggestion-list">
+                        <div class="suggestion-item">Plan a trip with full itinerary and bookings</div>
+                        <div class="suggestion-item">Sort my tasks and prioritize this week</div>
+                        <div class="suggestion-item">Create a budget tracker from my spending</div>
+                        <div class="suggestion-item">Set up a weekly review system every Sunday</div>
+                    </div>
+                </div>
+
+                <!-- Chat history area (hidden initially) -->
+                <div class="chat-history" id="chatHistory" style="display: none;"></div>
+
+                <!-- News & Updates View Container (hidden initially) -->
+                <div id="viewContainer" class="view-container" style="display: none;">
+                    <button class="back-btn" id="viewBackBtn"><i class="fa-solid fa-arrow-left"></i> Back to Search</button>
+                    <h2 id="viewTitle" class="view-title">Latest News</h2>
+                    <div id="viewContent" class="view-content"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const chatInput = document.querySelector('textarea');
+        const searchInputArea = document.querySelector('.search-input-area');
+        const mainTitle = document.querySelector('.main-title');
+        const suggestionsContainer = document.querySelector('.suggestions-container');
+        const chatHistory = document.getElementById('chatHistory');
+        const centerContent = document.querySelector('.center-content');
+        const recentList = document.getElementById('recentList');
+        const recentPlaceholder = document.getElementById('recentPlaceholder');
+        const micBtn = document.getElementById('micBtn');
+
+        const navSearch = document.getElementById('nav-search');
+        const navNews = document.getElementById('nav-news');
+        const navUpdates = document.getElementById('nav-updates');
+        const viewContainer = document.getElementById('viewContainer');
+        const viewTitle = document.getElementById('viewTitle');
+        const viewContent = document.getElementById('viewContent');
+        const viewBackBtn = document.getElementById('viewBackBtn');
+
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const fileStatus = document.getElementById('fileStatus');
+
+        const dataContent = {
+            news: [
+                { title: "Gemini 2.5 Flash: Reaching New Frontiers", date: "Oct 25, 2024", desc: "Experience the fastest and most efficient Gemini model yet, now with enhanced reasoning capabilities." },
+                { title: "Voice Assistant Integration Beta", date: "Oct 22, 2024", desc: "Start talking to your AI buddy! Our experimental voice feature is now rolling out to select users." },
+                { title: "Global Expansion: New Data Centers", date: "Oct 18, 2024", desc: "We're reducing latency worldwide with three new server clusters launched this week." }
+            ],
+            updates: [
+                { title: "v1.2.0: History & Persistence", date: "Oct 24, 2024", desc: "Save your favorite conversations locally and revisit them anytime with the new sidebar history." },
+                { title: "v1.1.5: UI Polish & Dark Mode", date: "Oct 20, 2024", desc: "Enhanced contrast ratios and smoother transitions for a more premium workspace feel." },
+                { title: "v1.0.0: The Birth of Chat Bot", date: "Oct 15, 2024", desc: "Our initial release is live! A clean, minimalist interface designed for peak productivity." }
+            ]
+        };
+
+        function showView(type) {
+            // Hide everything
+            mainTitle.style.display = 'none';
+            suggestionsContainer.style.display = 'none';
+            chatHistory.style.display = 'none';
+            viewContainer.style.display = 'none';
+            searchInputArea.closest('.search-container').style.display = 'none';
+
+            // Reset active states
+            [navSearch, navNews, navUpdates].forEach(el => el.classList.remove('active'));
+
+            if (type === 'search') {
+                navSearch.classList.add('active');
+                mainTitle.style.display = 'block';
+                suggestionsContainer.style.display = 'block';
+                searchInputArea.closest('.search-container').style.display = 'flex';
+                // Reset layout if it was in chat mode
+                centerContent.style.justifyContent = 'initial';
+                centerContent.style.height = 'auto';
+                centerContent.style.paddingTop = '15vh';
+            } else {
+                if (type === 'news') navNews.classList.add('active');
+                else navUpdates.classList.add('active');
+
+                viewContainer.style.display = 'block';
+                viewTitle.innerText = type === 'news' ? 'Latest News' : 'Updates';
+                renderDataView(type);
+            }
+        }
+
+        navSearch.onclick = () => showView('search');
+        navNews.onclick = () => showView('news');
+        navUpdates.onclick = () => showView('updates');
+        viewBackBtn.onclick = () => showView('search');
+
+        function renderDataView(type) {
+            const data = dataContent[type];
+            viewContent.innerHTML = data.map(item => `
+                <div class="data-card">
+                    <div class="card-header">
+                        <h3>${item.title}</h3>
+                        <span class="card-date">${item.date}</span>
+                    </div>
+                    <p>${item.desc}</p>
+                </div>
+            `).join('');
+        }
+
+        navSearch.onclick = () => showView('search');
+        navNews.onclick = () => showView('news');
+        navUpdates.onclick = () => showView('updates');
+        viewBackBtn.onclick = () => showView('search');
+
+        // Recognition Setup
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                micBtn.classList.add('listening');
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                chatInput.value = transcript;
+                submitPrompt();
+            };
+
+            recognition.onerror = () => {
+                micBtn.classList.remove('listening');
+            };
+
+            recognition.onend = () => {
+                micBtn.classList.remove('listening');
+            };
+        }
+
+        micBtn.onclick = () => {
+            if (!recognition) {
+                alert("Speech recognition is not supported in this browser.");
+                return;
+            }
+            if (micBtn.classList.contains('listening')) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        };
+
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                // Cancel any ongoing speech
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                
+                // Get available voices
+                let voices = window.speechSynthesis.getVoices();
+                
+                // Function to find a female voice
+                const findFemaleVoice = (voiceList) => {
+                    return voiceList.find(voice => 
+                        voice.name.toLowerCase().includes('female') || 
+                        voice.name.toLowerCase().includes('woman') ||
+                        voice.name.toLowerCase().includes('zira') || // Microsoft Zira (Desktop) - English (United States)
+                        voice.name.toLowerCase().includes('samantha') || // Apple Samantha
+                        voice.name.toLowerCase().includes('google us english') // Usually female-sounding
+                    );
+                };
+
+                let selectedVoice = findFemaleVoice(voices);
+                
+                if (selectedVoice) {
+                    utterance.voice = selectedVoice;
+                } else if (voices.length === 0) {
+                    // Voices might not be loaded yet; set up an event listener
+                    window.speechSynthesis.onvoiceschanged = () => {
+                        voices = window.speechSynthesis.getVoices();
+                        selectedVoice = findFemaleVoice(voices);
+                        if (selectedVoice) {
+                            utterance.voice = selectedVoice;
+                        }
+                        window.speechSynthesis.speak(utterance);
+                        // Remove listener to prevent multiple triggers
+                        window.speechSynthesis.onvoiceschanged = null;
+                    };
+                    return; // Wait for event listener to speak
+                }
+                
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+        
+        // Setup initial UI states by adjusting padding etc for a chat interface
+        function transitionToChat() {
+            mainTitle.style.display = 'none';
+            suggestionsContainer.style.display = 'none';
+            chatHistory.style.display = 'flex';
+            
+            // Move input to bottom by changing flex order/margin
+            centerContent.style.justifyContent = 'space-between';
+            centerContent.style.height = '100%';
+            centerContent.style.paddingTop = '40px';
+            centerContent.style.paddingBottom = '40px';
+        }
+        
+        async function fetchHistory() {
+            try {
+                const res = await fetch('/api/history');
+                const data = await res.json();
+                
+                if (data.history && data.history.length > 0) {
+                    recentPlaceholder.style.display = 'none';
+                    recentList.innerHTML = '';
+                    
+                    data.history.reverse().forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'recent-item';
+                        // Show generic brief snippet of the user's prompt
+                        const snippet = item.user.length > 30 ? item.user.substring(0, 30) + '...' : item.user;
+                        div.innerHTML = `<i class="fa-regular fa-message"></i> <span>${snippet}</span>`;
+                        div.onclick = () => restoreChat(item);
+                        recentList.appendChild(div);
+                    });
+                } else {
+                    recentPlaceholder.style.display = 'block';
+                    recentList.innerHTML = '';
+                }
+            } catch (e) {
+                console.error("Failed to load history", e);
+            }
+        }
+        
+        function restoreChat(item) {
+            chatHistory.innerHTML = '';
+            transitionToChat();
+            appendMessage('user', item.user);
+            appendMessage('bot', item.bot);
+            // On restore on mobile, one might normally close the sidebar, but here we just restore chat
+        }
+
+        // Fetch history on load
+        fetchHistory();
+
+        // --- File Upload & RAG Logic ---
+        uploadBtn.onclick = () => fileInput.click();
+
+        fileInput.onchange = async () => {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fileStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Uploading...`;
+            fileStatus.style.display = 'block';
+
+            try {
+                const res = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    fileStatus.innerHTML = `<i class="fa-solid fa-file-pdf"></i> ${file.name} loaded`;
+                    fileStatus.classList.add('loaded');
+                } else {
+                    fileStatus.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> Error: ${data.error}`;
+                    fileStatus.classList.remove('loaded');
+                }
+            } catch (e) {
+                console.error(e);
+                fileStatus.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> Upload failed.`;
+            }
+        };
+
+        async function submitPrompt() {
+            const prompt = chatInput.value.trim();
+            if (!prompt) return;
+
+            // Clear input
+            chatInput.value = '';
+            
+            // On first message, switch UI
+            if (chatHistory.style.display === 'none') {
+                transitionToChat();
+            }
+
+            // Append user message
+            appendMessage('user', prompt);
+
+            // Append loading state
+            const loadingId = appendMessage('bot', `<i class="fa-solid fa-spinner fa-spin"></i> Thinking...`);
+
+            try {
+                // Send to Flask backend
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: prompt })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    updateMessage(loadingId, data.response);
+                    // Read voice
+                    speak(data.response);
+                    // Refresh sidebar history 
+                    fetchHistory();
+                } else {
+                    updateMessage(loadingId, `Error: ${data.error}`);
+                }
+            } catch (err) {
+                updateMessage(loadingId, 'Connection Error: Could not reach the backend.');
+                console.error(err);
+            }
+        }
+
+        // Handle Enter key (Shift+Enter for newline)
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // prevent new line
+                submitPrompt();
+            }
+        });
+
+        function appendMessage(sender, content) {
+            const id = 'msg-' + Date.now();
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `chat-message ${sender}-message`;
+            msgDiv.id = id;
+            
+            const iconHTML = sender === 'user' ? 
+                '<div class="avatar user-avatar"><i class="fa-regular fa-user"></i></div>' : 
+                '<div class="avatar bot-avatar"><i class="fa-solid fa-desktop"></i></div>';
+            
+            // Format generic plain text responses to maintain spacing visually (since we don't have markdown parser)
+            const formattedContent = sender === 'bot' && !content.includes('<i') 
+                ? content.replace(/\n\n/g, '<br><br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                : content;
+
+            msgDiv.innerHTML = `
+                ${iconHTML}
+                <div class="message-content">
+                    ${formattedContent}
+                </div>
+            `;
+            
+            chatHistory.appendChild(msgDiv);
+            
+            // Auto-scroll to bottom
+            const mainContent = document.querySelector('.main-content');
+            mainContent.scrollTop = mainContent.scrollHeight;
+
+            return id;
+        }
+
+        function updateMessage(id, content) {
+            const msgDiv = document.getElementById(id);
+            if (msgDiv) {
+                const contentDiv = msgDiv.querySelector('.message-content');
+                // Basic markdown formatting
+                const formattedContent = content.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                contentDiv.innerHTML = formattedContent;
+                
+                const mainContent = document.querySelector('.main-content');
+                mainContent.scrollTop = mainContent.scrollHeight;
+            }
+        }
+    </script>
+</body>
+</html>
